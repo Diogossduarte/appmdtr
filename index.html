@@ -8,6 +8,10 @@
 <!-- SheetJS: leitura de arquivos .xlsx no navegador -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+<!-- Leaflet: mapa gratuito, sem chave de API e sem custo -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
 <style>
 /* ============================================================
    DESIGN TOKENS — identidade Eurofarma (navy #002D72 / verde #00A651)
@@ -199,6 +203,7 @@ table.data thead th .arrow{opacity:0; margin-left:4px; font-size:10px}
 table.data thead th.sorted .arrow{opacity:1}
 table.data tbody td{padding:10px 14px; border-bottom:1px solid var(--line-2); vertical-align:middle}
 table.data tbody tr:last-child td{border-bottom:0}
+table.data tfoot td{padding:12px 14px; border-top:1.5px solid var(--line); background:var(--panel-2); font-weight:800}
 table.data tbody tr:hover td{background:#fafbfe}
 table.data tbody tr.clickable{cursor:pointer}
 td.num{text-align:right; font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap}
@@ -216,6 +221,55 @@ td.num{text-align:right; font-variant-numeric:tabular-nums; font-weight:600; whi
 .barcell > span{position:relative; z-index:1}
 
 .evo{font-weight:800; font-size:12.5px; white-space:nowrap}
+.proj-ctl{display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--muted); background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:5px 10px}
+.proj-ctl input{width:46px; text-align:center; border:1px solid var(--line); border-radius:7px; padding:4px 5px; font-family:inherit; font-size:12.5px; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums}
+.proj-ctl input:focus{outline:none; border-color:var(--navy); box-shadow:0 0 0 3px var(--navy-050)}
+.proj-note{margin-top:11px; font-size:11.5px; color:var(--muted); font-weight:600}
+
+/* --- drill-down: PV → farmácia → apresentação --- */
+tr.drillable{cursor:pointer}
+tr.drillable:hover td{background:var(--navy-050)}
+tr.drillable.open td{background:var(--navy-050)}
+tr.drillable .caret{display:inline-block; width:12px; color:var(--navy); font-size:10px; font-weight:800}
+tr.drill-row > td{padding:0 !important; background:var(--panel-2)}
+.drill{padding:14px 16px 16px; border-left:3px solid var(--navy)}
+.drill-2{border-left-color:var(--green); background:#fbfdfc}
+.drill-h{display:flex; align-items:center; gap:8px; font-size:12px; font-weight:800; color:var(--ink-2); margin-bottom:10px}
+.drill-h .dot{width:8px;height:8px;border-radius:3px;background:var(--navy); flex:0 0 auto}
+.drill-h .dot.g{background:var(--green)}
+.drill-h .hint{font-weight:600; color:var(--muted); font-size:11px}
+table.data.sub{font-size:12.5px; min-width:520px}
+table.data.sub thead th{background:transparent; font-size:10px; padding:8px 12px}
+table.data.sub tbody td{padding:8px 12px}
+.drill .tbl-scroll{max-height:340px; overflow-y:auto; background:#fff}
+
+/* --- cross-filter (estilo Power BI) --- */
+.xf-bar{display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:16px;
+  background:var(--navy-050); border:1px solid #d7e2f7; border-radius:12px; padding:10px 14px}
+.xf-chip{display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #cfdcf3;
+  color:var(--navy); border-radius:999px; padding:5px 6px 5px 12px; font-size:12px; font-weight:700}
+.xf-chip b{font-weight:800}
+.xf-chip button{border:0; background:var(--navy-050); color:var(--navy); width:20px; height:20px;
+  border-radius:50%; cursor:pointer; font-weight:800; font-size:11px; line-height:1; display:grid; place-items:center}
+.xf-chip button:hover{background:var(--navy); color:#fff}
+.xf-clear-all{margin-left:auto; border:0; background:none; color:var(--navy); font-weight:700; font-size:12px; cursor:pointer}
+.xf-clear-all:hover{text-decoration:underline}
+.xf-seg{transition:opacity .15s}
+.xf-seg:hover{opacity:.85 !important}
+.split-legend .row.xf-seg{border-radius:9px; padding:4px 7px; margin:-4px -7px}
+.split-legend .row.xf-seg:hover{background:var(--navy-050)}
+.split-legend .row.xf-on{background:var(--navy-050); box-shadow:inset 0 0 0 1px #cfdcf3}
+
+/* --- mapa (Leaflet · gratuito, sem chave) --- */
+.mapbox{height:480px; width:100%; border-radius:12px; border:1px solid var(--line); background:#eef2f8; z-index:1}
+.mapbox .leaflet-container{border-radius:12px; font-family:var(--font); background:#eef2f8}
+.map-note{margin-top:11px; font-size:11.5px; color:var(--muted); font-weight:600}
+.map-fallback{display:grid; place-items:center; height:100%; text-align:center; color:var(--muted); font-size:13px; font-weight:600; padding:24px}
+.euf-pin{background:none; border:0}
+.euf-pin svg{filter:drop-shadow(1px 3px 3px rgba(15,32,64,.4))}
+.leaflet-popup-content{margin:12px 14px}
+.leaflet-control-layers{border-radius:10px !important; border:1px solid var(--line) !important; font-family:var(--font); font-size:12px; font-weight:600}
+@media (max-width:640px){ .mapbox{height:360px} }
 .evo.up{color:var(--pos)} .evo.down{color:var(--neg)} .evo.flat{color:var(--muted)} .evo.new{color:var(--green-700)}
 
 /* ============================================================
@@ -242,24 +296,52 @@ td.num{text-align:right; font-variant-numeric:tabular-nums; font-weight:600; whi
 .split-legend .pct{font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums}
 
 /* ============================================================
-   STATES: loading / error / empty
+   TELA DE IMPORTAÇÃO — padrão Indiana app (dark navy)
    ============================================================ */
-.state{
-  max-width:560px; margin:70px auto; text-align:center; padding:40px 30px;
-  background:var(--panel); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow-md);
-}
-.state .emoji{width:64px;height:64px;margin:0 auto 18px; border-radius:18px; display:grid; place-items:center;
-  background:var(--navy-050); color:var(--navy)}
-.state.err .emoji{background:var(--neg-bg); color:var(--neg)}
-.state .emoji svg{width:30px;height:30px}
-.state h2{margin:0 0 8px; font-size:19px; font-weight:800; color:var(--ink)}
-.state p{margin:0 auto 6px; color:var(--muted); font-size:14px; max-width:420px}
-.state .missing{margin:14px auto 0; text-align:left; max-width:420px; font-size:12.5px; background:var(--neg-bg); border:1px solid #f3cccc; border-radius:12px; padding:12px 14px; color:#7a2b2b}
-.state .missing code{background:#fff; padding:1px 6px; border-radius:5px; font-size:11.5px}
-.state .actions{margin-top:22px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
-.dropzone{margin-top:20px; border:2px dashed #cdd8ea; border-radius:14px; padding:22px; color:var(--muted); font-size:13px; font-weight:600; transition:.15s}
-.dropzone.drag{border-color:var(--navy); background:var(--navy-050); color:var(--navy)}
-.spinner{width:44px;height:44px;border:4px solid var(--navy-050); border-top-color:var(--navy); border-radius:50%; margin:0 auto 20px; animation:spin 1s linear infinite}
+.import-screen{position:fixed; inset:0; z-index:80; display:flex; min-height:100vh; background:#0D1F5C; font-family:var(--font); color:#fff}
+.imp-aside{width:220px; flex:0 0 220px; background:rgba(255,255,255,0.04); border-right:1px solid rgba(255,255,255,0.07); display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0}
+.imp-aside .imp-logo{padding:20px 16px; border-bottom:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; gap:11px; justify-content:center}
+.imp-logo .mark{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#1B7FE8,#4DAAFF); display:grid; place-items:center; color:#fff; font-weight:800; font-size:19px; position:relative; flex:0 0 auto}
+.imp-logo .mark::after{content:"";position:absolute;right:6px;bottom:6px;width:10px;height:10px;border-radius:3px;background:#00A651}
+.imp-logo .t{font-weight:800; font-size:13.5px; line-height:1.25}
+.imp-logo .t small{display:block; font-weight:600; font-size:10px; color:rgba(255,255,255,0.45); letter-spacing:.2px}
+.imp-aside .imp-desc{padding:20px 20px 0; flex:1}
+.imp-desc .lead{font-size:11.5px; color:rgba(255,255,255,0.28); line-height:1.7}
+.imp-feats{margin-top:22px; display:flex; flex-direction:column; gap:10px}
+.imp-feats .f{display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(255,255,255,0.32)}
+.imp-feats .f span{color:#4DAAFF; font-size:14px}
+.imp-aside .imp-foot{padding:20px; border-top:1px solid rgba(255,255,255,0.07); font-size:11px; color:rgba(255,255,255,0.22); display:flex; align-items:center; gap:6px}
+.imp-main{margin-left:220px; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; width:100%}
+.imp-hero{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#1B7FE8,#4DAAFF); display:grid; place-items:center; color:#fff; font-weight:800; font-size:30px; margin-bottom:22px; box-shadow:0 10px 30px -8px rgba(27,127,232,.6); position:relative}
+.imp-hero::after{content:"";position:absolute;right:10px;bottom:10px;width:14px;height:14px;border-radius:4px;background:#00A651}
+.imp-main h2{color:#fff; font-size:26px; font-weight:800; margin:0 0 8px; letter-spacing:-.5px; text-align:center}
+.imp-main .sub{color:rgba(255,255,255,0.4); font-size:14px; margin:0 0 26px; text-align:center}
+.imp-guide{width:100%; max-width:480px; margin-bottom:24px; background:rgba(255,255,255,0.05); border:1px solid rgba(77,170,255,0.2); border-radius:16px; padding:20px 24px}
+.imp-guide .h{font-size:11px; font-weight:700; color:#4DAAFF; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px}
+.imp-step{display:flex; align-items:flex-start; gap:12px; margin-bottom:8px}
+.imp-step:last-child{margin-bottom:0}
+.imp-step .n{width:24px;height:24px;border-radius:50%;flex:0 0 auto; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:rgba(255,255,255,0.4)}
+.imp-step.on .n{background:#1B7FE8; border:none; color:#fff}
+.imp-step .txt{padding-top:3px; font-size:13px; line-height:1.4; color:rgba(255,255,255,0.5)}
+.imp-step.on .txt{color:#fff; font-weight:600}
+.imp-drop{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; cursor:pointer; text-align:center; border:2px dashed rgba(77,170,255,0.25); border-radius:16px; padding:34px 40px; background:rgba(255,255,255,0.04); transition:all .2s; max-width:480px; width:100%}
+.imp-drop.drag{border-color:#4DAAFF; background:rgba(27,127,232,0.08)}
+.imp-drop .ic{width:56px;height:56px;border-radius:16px; background:rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; transition:all .2s; color:rgba(255,255,255,0.5)}
+.imp-drop.drag .ic{background:rgba(27,127,232,0.2); color:#4DAAFF}
+.imp-drop .d1{color:#fff; font-weight:700; font-size:15px; margin:0 0 5px}
+.imp-drop .d2{color:rgba(255,255,255,0.4); font-size:13px; margin:0}
+.imp-drop .btn-blue{background:#1B7FE8; color:#fff; font-size:13px; font-weight:600; padding:9px 28px; border-radius:9px; box-shadow:0 4px 16px rgba(27,127,232,0.4)}
+.imp-compat{color:rgba(255,255,255,0.25); font-size:12px; margin-top:16px; text-align:center}
+.imp-status{width:100%; max-width:480px; margin-bottom:18px}
+.imp-status:empty{display:none}
+.imp-loading{display:flex; align-items:center; gap:13px; justify-content:center; color:rgba(255,255,255,0.7); font-size:14px; font-weight:600}
+.imp-spin{width:34px;height:34px;border:3px solid rgba(77,170,255,0.25); border-top-color:#4DAAFF; border-radius:50%; animation:spin 1s linear infinite; flex:0 0 auto}
+.imp-err{background:rgba(255,80,80,0.12); border:1px solid rgba(255,90,90,0.35); border-radius:14px; padding:14px 16px}
+.imp-err .tt{color:#ff8a8a; font-weight:700; font-size:13.5px}
+.imp-err .msg{color:rgba(255,255,255,0.75); font-size:13px; font-weight:500; margin-top:4px; line-height:1.5}
+.imp-err code{background:rgba(0,0,0,0.25); padding:1px 6px; border-radius:5px; font-size:11.5px; color:#ffd9d9}
+.imp-err .missing{margin-top:10px; font-size:12px; color:rgba(255,255,255,0.7); line-height:1.9}
+@media (max-width:720px){ .imp-aside{display:none} .imp-main{margin-left:0; padding:28px 18px} }
 
 .skeleton{background:linear-gradient(90deg,#eef1f7 25%,#f6f8fc 50%,#eef1f7 75%); background-size:200% 100%; animation:sk 1.3s infinite; border-radius:8px}
 @keyframes sk{to{background-position:-200% 0}}
@@ -331,11 +413,11 @@ footer .fl{display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap
       <label for="fSetor">Propagandista (PV)</label>
       <div class="select-wrap"><select class="ctl" id="fSetor"><option value="">Todos os PVs</option></select></div>
     </div>
-    <div class="field">
+    <div class="field" id="fieldCanal">
       <label for="fCanal">Canal</label>
       <div class="select-wrap"><select class="ctl" id="fCanal"><option value="">Todos os canais</option></select></div>
     </div>
-    <div class="field">
+    <div class="field" id="fieldTipo">
       <label for="fTipo">Tipo de PDV</label>
       <div class="select-wrap"><select class="ctl" id="fTipo"><option value="">Rede + Independente</option></select></div>
     </div>
@@ -347,6 +429,7 @@ footer .fl{display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap
   <!-- ABAS -->
   <nav class="tabs" role="tablist" aria-label="Visões">
     <button class="tab" role="tab" data-tab="geral"   aria-selected="true">Visão Geral</button>
+    <button class="tab" role="tab" data-tab="extensior" aria-selected="false">Visão Extensior</button>
     <button class="tab" role="tab" data-tab="pv"       aria-selected="false">Visão PV</button>
     <button class="tab" role="tab" data-tab="produto"  aria-selected="false">Visão Produto</button>
     <button class="tab" role="tab" data-tab="rede"     aria-selected="false">Visão Rede</button>
@@ -364,28 +447,58 @@ footer .fl{display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap
   </footer>
 </div>
 
-<!-- ESTADO: carregando -->
-<div id="stateLoading" class="state">
-  <div class="spinner"></div>
-  <h2>Carregando dados…</h2>
-  <p>Lendo a planilha de vendas e preparando as visões.</p>
-</div>
+<!-- TELA DE IMPORTAÇÃO — padrão Indiana app -->
+<div id="importScreen" class="import-screen">
+  <aside class="imp-aside">
+    <div class="imp-logo">
+      <div class="mark">e</div>
+      <div class="t">Desempenho Comercial<small>Eurofarma · Vendas</small></div>
+    </div>
+    <div class="imp-desc">
+      <div class="lead">Carregue a planilha de vendas para acessar o painel completo com faturamento, unidades e análises por PV, produto, rede, cidade e brick.</div>
+      <div class="imp-feats">
+        <div class="f"><span>✓</span>Visão geral executiva</div>
+        <div class="f"><span>✓</span>Desempenho por propagandista</div>
+        <div class="f"><span>✓</span>Ranking de produtos</div>
+        <div class="f"><span>✓</span>Vendas por rede e cidade</div>
+        <div class="f"><span>✓</span>Análise por brick</div>
+        <div class="f"><span>✓</span>Comparativo ano a ano</div>
+      </div>
+    </div>
+    <div class="imp-foot">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      Dados apenas no seu navegador
+    </div>
+  </aside>
 
-<!-- ESTADO: erro / vazio -->
-<div id="stateError" class="state err hidden">
-  <div class="emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-  <h2 id="errTitle">Não foi possível carregar a planilha</h2>
-  <p id="errMsg">Verifique se o arquivo está no local correto e tente novamente.</p>
-  <div id="errMissing" class="missing hidden"></div>
-  <div class="dropzone" id="dropzone">Arraste o arquivo <b>.xlsx</b> aqui ou use o botão abaixo</div>
-  <div class="actions">
-    <button class="btn" id="btnPick" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Carregar planilha
-    </button>
-    <button class="btn ghost" id="btnRetry" type="button">Tentar novamente</button>
+  <div class="imp-main">
+    <div class="imp-hero">e</div>
+    <h2>Bem-vindo ao seu painel</h2>
+    <p class="sub">Carregue a planilha de vendas para começar</p>
+
+    <div class="imp-status" id="impStatus"></div>
+
+    <div class="imp-guide">
+      <div class="h">Como atualizar os dados do painel</div>
+      <div class="imp-step"><div class="n">1</div><div class="txt">Exporte a planilha de vendas do sistema (QUERY / Indiana Business)</div></div>
+      <div class="imp-step"><div class="n">2</div><div class="txt">Salve o arquivo .xlsx no seu computador</div></div>
+      <div class="imp-step"><div class="n">3</div><div class="txt">Para uso hospedado, renomeie para <code style="background:rgba(0,0,0,.25);padding:1px 6px;border-radius:5px;font-size:11.5px;color:#cfe4ff">dados.xlsx</code> na mesma pasta do painel</div></div>
+      <div class="imp-step on"><div class="n">4</div><div class="txt">Importe a planilha abaixo neste painel</div></div>
+    </div>
+
+    <label class="imp-drop" id="dropzone">
+      <div class="ic">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+      </div>
+      <div>
+        <p class="d1">Arraste a planilha aqui</p>
+        <p class="d2">ou clique para selecionar · .xls ou .xlsx</p>
+      </div>
+      <div class="btn-blue">Selecionar arquivo</div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
+    </label>
+    <p class="imp-compat">Compatível com .xls e .xlsx · Dados processados localmente</p>
   </div>
-  <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden">
 </div>
 
 <div class="toast" id="toast"></div>
@@ -402,7 +515,7 @@ footer .fl{display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap
    ============================================================================ */
 const CONFIG = {
   DATA_URL: "dados.xlsx",          // <-- renomeie sua planilha para dados.xlsx (ou ajuste aqui)
-  SHEET_NAME: null,                // null = primeira aba; ou informe "QUERY"
+  SHEET_NAME: "QUERY",             // aba obrigatória da planilha de vendas
   BASE_COLS: ["Setor","Brick","Canal","UF","Municipio","Endereco","Bairro",
               "Bandeira","PDV","Tipo PDV","Marca","Apresentacao","Provedor"]
 };
@@ -418,8 +531,20 @@ const STATE = {
   filters: {setor:"", canal:"", tipo:""},
   activeTab: "geral",
   source: "url",       // url | file
-  tableState: {}       // por-aba: {sortKey, sortDir, q, showAll}
+  tableState: {},      // por-aba: {sortKey, sortDir, q, showAll}
+  drill: {},           // drill-down da tabela de PV: {ctx: {pv, pdv}}
+  xf: {apres:null, bandeira:null},  // cross-filter (estilo Power BI) na Visão Extensior
+  // projeção: extrapola o mês parcial (planilha carregada semanalmente)
+  proj: {
+    dias:  Math.min(new Date().getDate(), new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate()),
+    total: new Date(new Date().getFullYear(), new Date().getMonth()+1, 0).getDate()
+  }
 };
+function projFactor(){
+  const d=Number(STATE.proj.dias)||0, t=Number(STATE.proj.total)||0;
+  if(d<=0 || t<=0) return 1;
+  return t/d;
+}
 
 /* ============================================================================
    HELPERS — números, datas, texto, formatação
@@ -485,9 +610,12 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
    CARREGAMENTO DE DADOS
    ============================================================================ */
 function showState(which){
-  document.getElementById("stateLoading").classList.toggle("hidden", which!=="loading");
-  document.getElementById("stateError").classList.toggle("hidden", which!=="error");
+  document.getElementById("importScreen").classList.toggle("hidden", which==="app");
   document.getElementById("app").classList.toggle("hidden", which!=="app");
+  if(which==="loading"){
+    const s=document.getElementById("impStatus");
+    if(s) s.innerHTML=`<div class="imp-loading"><div class="imp-spin"></div> Carregando dados…</div>`;
+  }
 }
 
 async function loadFromURL(){
@@ -505,10 +633,10 @@ async function loadFromURL(){
     const buf = await resp.arrayBuffer();
     parseBuffer(buf, "url");
   }catch(err){
-    console.warn(err);
-    failLoad("Não foi possível carregar automaticamente",
-      "O arquivo <code>"+esc(CONFIG.DATA_URL)+"</code> não foi encontrado ou o dashboard está aberto localmente (file://). "+
-      "Carregue a planilha manualmente — o restante funciona normalmente.");
+    // arquivo ausente ou aberto em file:// → tela de importação limpa, sem mensagem de erro
+    console.warn("Auto-carregamento indisponível:", err.message);
+    showState("error");
+    const s=document.getElementById("impStatus"); if(s) s.innerHTML="";
   }finally{ setBusy(false); }
 }
 
@@ -527,8 +655,13 @@ function loadFromFile(file){
 
 function parseBuffer(buf, source){
   const wb = XLSX.read(buf, {type:"array", cellDates:true});
-  const sheetName = CONFIG.SHEET_NAME && wb.SheetNames.includes(CONFIG.SHEET_NAME)
-      ? CONFIG.SHEET_NAME : wb.SheetNames[0];
+  // usa exclusivamente a aba QUERY (ignora quaisquer outras abas da planilha)
+  const sheetName = wb.SheetNames.find(n=>n.trim().toUpperCase()===CONFIG.SHEET_NAME);
+  if(!sheetName){
+    return failLoad("Aba \""+CONFIG.SHEET_NAME+"\" não encontrada",
+      "Esta planilha não contém a aba <code>"+esc(CONFIG.SHEET_NAME)+"</code>, que é a fonte de dados do painel. "+
+      "Abas encontradas: "+wb.SheetNames.map(n=>"<code>"+esc(n)+"</code>").join(", ")+".");
+  }
   const ws = wb.Sheets[sheetName];
   const raw = XLSX.utils.sheet_to_json(ws, {defval:null, raw:true});
   if(!raw.length) return failLoad("Planilha vazia","A aba \""+esc(sheetName)+"\" não contém linhas de dados.");
@@ -592,14 +725,17 @@ function parseBuffer(buf, source){
 
 function failLoad(title,msg,missingCols){
   showState("error");
-  document.getElementById("errTitle").textContent=title;
-  document.getElementById("errMsg").innerHTML=msg;
-  const box=document.getElementById("errMissing");
+  const s=document.getElementById("impStatus");
+  let html=`<div class="imp-err"><div class="tt">${esc(title)}</div>`+
+           `<div class="msg">${msg} <a href="#" id="impRetry" style="color:#4DAAFF;font-weight:700;text-decoration:none">Tentar novamente</a></div>`;
   if(missingCols && missingCols.length){
-    box.classList.remove("hidden");
-    box.innerHTML="<b>Colunas ausentes / não reconhecidas:</b><br>"+
-      missingCols.map(c=>"<code>"+esc(c)+"</code>").join(" ");
-  } else box.classList.add("hidden");
+    html+=`<div class="missing"><b style="color:#fff">Colunas ausentes / não reconhecidas:</b><br>`+
+          missingCols.map(c=>"<code>"+esc(c)+"</code>").join(" ")+`</div>`;
+  }
+  html+=`</div>`;
+  s.innerHTML=html;
+  const r=document.getElementById("impRetry");
+  if(r) r.onclick=e=>{ e.preventDefault(); loadFromURL(); };
 }
 function setBusy(b){ const btn=document.getElementById("btnRefresh"); btn.setAttribute("aria-busy",b?"true":"false"); }
 
@@ -626,6 +762,7 @@ function onDataReady(){
     (STATE.skipped?(" · "+fmtInt(STATE.skipped)+" linhas vazias ignoradas"):"");
 
   showState("app");
+  applyFilterVisibility();
   render();
   toast("Dados atualizados · "+STATE.periods.atuLbl, "ok");
 }
@@ -640,10 +777,11 @@ function fillSelect(id, items, allLabel){
 /* dados filtrados conforme filtros globais */
 function filtered(){
   const f=STATE.filters;
+  const onlyPV = STATE.activeTab==="geral"; // na Visão Geral só o filtro de PV vale
   return STATE.rows.filter(r=>
     (!f.setor||r.setor===f.setor) &&
-    (!f.canal||r.canal===f.canal) &&
-    (!f.tipo ||r.tipo ===f.tipo));
+    (onlyPV || !f.canal||r.canal===f.canal) &&
+    (onlyPV || !f.tipo ||r.tipo ===f.tipo));
 }
 
 /* agregação genérica por chave */
@@ -669,7 +807,7 @@ function totals(rows){
 /* ============================================================================
    COMPONENTES SVG  (charts puros, responsivos via viewBox)
    ============================================================================ */
-function svgDonut(data, centerLabel, centerValue){
+function svgDonut(data, centerLabel, centerValue, xf){
   const total=data.reduce((s,d)=>s+d.value,0)||1;
   const R=54, r=34, cx=70, cy=70; let a0=-Math.PI/2; const segs=[];
   data.forEach((d,i)=>{
@@ -680,7 +818,10 @@ function svgDonut(data, centerLabel, centerValue){
     const xi1=cx+r*Math.cos(a1), yi1=cy+r*Math.sin(a1);
     const xi0=cx+r*Math.cos(a0), yi0=cy+r*Math.sin(a0);
     const col=d.color||PALETTE[i%PALETTE.length];
-    if(frac>0.0001) segs.push(`<path d="M${x0} ${y0} A${R} ${R} 0 ${large} 1 ${x1} ${y1} L${xi1} ${yi1} A${r} ${r} 0 ${large} 0 ${xi0} ${yi0} Z" fill="${col}"><title>${esc(d.label)}: ${(frac*100).toFixed(1)}%</title></path>`);
+    const act = xf && STATE.xf[xf.dim]===d.label;
+    const dim = xf && STATE.xf[xf.dim] && !act;
+    const attrs = xf ? ` class="xf-seg" data-xf="${esc(xf.dim)}" data-xfval="${esc(d.label)}" style="cursor:pointer;opacity:${dim?0.28:1}"` : "";
+    if(frac>0.0001) segs.push(`<path d="M${x0} ${y0} A${R} ${R} 0 ${large} 1 ${x1} ${y1} L${xi1} ${yi1} A${r} ${r} 0 ${large} 0 ${xi0} ${yi0} Z" fill="${col}"${attrs}><title>${esc(d.label)}: ${(frac*100).toFixed(1)}%</title></path>`);
     a0=a1;
   });
   return `<svg viewBox="0 0 140 140" class="chart" style="max-width:180px;margin:0 auto;display:block" role="img" aria-label="${esc(centerLabel)}">
@@ -691,18 +832,22 @@ function svgDonut(data, centerLabel, centerValue){
     </g></svg>`;
 }
 
-// barras horizontais (ranking simples)
+// barras horizontais (ranking simples) — opts.xf torna as barras clicáveis (cross-filter)
 function svgBarsH(items, opts={}){
   const max=Math.max(1,...items.map(i=>i.value));
   const rowH=34, padL=opts.padL||140, w=560, h=items.length*rowH+8;
   const barW=w-padL-90;
+  const xf=opts.xf;
   const rows=items.map((it,i)=>{
     const y=i*rowH+8, bw=Math.max(2,it.value/max*barW);
     const col=it.color||PALETTE[i%PALETTE.length];
+    const act = xf && STATE.xf[xf.dim]===it.label;
+    const dim = xf && STATE.xf[xf.dim] && !act;
+    const attrs = xf ? ` class="svg-bar xf-seg" data-xf="${esc(xf.dim)}" data-xfval="${esc(it.label)}" style="cursor:pointer;opacity:${dim?0.3:1}"` : ` class="svg-bar"`;
     return `<g class="svg-row">
-      <text x="${padL-10}" y="${y+15}" text-anchor="end" class="axis-txt">${esc(trim(it.label,20))}<title>${esc(it.label)}</title></text>
-      <rect x="${padL}" y="${y+3}" width="${bw}" height="18" rx="5" fill="${col}" class="svg-bar"/>
-      <text x="${padL+bw+8}" y="${y+16}" class="val-txt">${esc(it.disp)}</text>
+      <text x="${padL-10}" y="${y+15}" text-anchor="end" class="axis-txt" style="${dim?"opacity:.45":""}">${esc(trim(it.label,20))}<title>${esc(it.label)}</title></text>
+      <rect x="${padL}" y="${y+3}" width="${bw}" height="18" rx="5" fill="${col}"${attrs}><title>${esc(it.label)}</title></rect>
+      <text x="${padL+bw+8}" y="${y+16}" class="val-txt" style="${dim?"opacity:.45":""}">${esc(it.disp)}</text>
     </g>`;
   }).join("");
   return `<svg viewBox="0 0 ${w} ${h}" class="chart" role="img">${rows}</svg>`;
@@ -739,7 +884,7 @@ function legend(items){
 
 // gráfico de linhas — várias séries sobre eixo de categorias (mesma unidade)
 function svgLines(items, series, moneyAxis){
-  const w=560, h=250, padL=54, padB=44, padT=14, padR=16;
+  const w=560, h=290, padL=54, padB=66, padT=30, padR=16;
   const plotW=w-padL-padR, plotH=h-padB-padT;
   const max=Math.max(1,...items.flatMap(it=>series.map(s=>it[s.key]||0)));
   const n=items.length;
@@ -749,37 +894,53 @@ function svgLines(items, series, moneyAxis){
   for(let t=0;t<=ticks;t++){ const val=max/ticks*t, y=padT+plotH-(val/max*plotH);
     grid+=`<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" class="grid-line"/>
            <text x="${padL-8}" y="${y+3}" text-anchor="end" class="axis-txt">${kfmt(val)}</text>`; }
-  let paths="";
-  series.forEach(s=>{
+  const lbl=v=> moneyAxis ? kfmt(v) : fmtInt(v);
+  let paths="", marks="";
+  series.forEach((s,si)=>{
     const pts=items.map((it,i)=>`${xAt(i)},${yAt(it[s.key]||0)}`).join(" ");
     paths+=`<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
-    paths+=items.map((it,i)=>`<circle cx="${xAt(i)}" cy="${yAt(it[s.key]||0)}" r="3.4" fill="#fff" stroke="${s.color}" stroke-width="2"><title>${esc(it.label)} · ${esc(s.name)}: ${moneyAxis?fmtBRL(it[s.key]||0):fmtInt(it[s.key]||0)}</title></circle>`).join("");
+    marks+=items.map((it,i)=>{
+      const v=it[s.key]||0, x=xAt(i), y=yAt(v);
+      // série 0 (período atual) ACIMA da linha · série 1 (período anterior) ABAIXO da linha
+      const dy = si===0 ? -11 : 19;
+      // contorno branco (paint-order) garante leitura mesmo cruzando a linha
+      return `<circle cx="${x}" cy="${y}" r="3.4" fill="#fff" stroke="${s.color}" stroke-width="2"><title>${esc(it.label)} · ${esc(s.name)}: ${moneyAxis?fmtBRL(v):fmtInt(v)}</title></circle>`+
+             `<text x="${x}" y="${y+dy}" text-anchor="middle" style="fill:${s.color};font-size:9.5px;font-weight:800;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round">${esc(lbl(v))}</text>`;
+    }).join("");
   });
-  const xlab=items.map((it,i)=>`<text x="${xAt(i)}" y="${h-padB+16}" text-anchor="middle" class="axis-txt">${esc(trim(it.label,9))}<title>${esc(it.label)}</title></text>`).join("");
-  return `<svg viewBox="0 0 ${w} ${h}" class="chart" role="img">${grid}${xlab}${paths}</svg>`;
+  const xlab=items.map((it,i)=>`<text x="${xAt(i)}" y="${h-padB+32}" text-anchor="middle" class="axis-txt">${esc(trim(it.label,9))}<title>${esc(it.label)}</title></text>`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" class="chart" role="img">${grid}${xlab}${paths}${marks}</svg>`;
 }
 
-// gráfico combo — barras (eixo esq., R$) + linha (eixo dir., quantidade)
-function svgCombo(items, bar, line){
-  const w=560, h=270, padL=54, padB=58, padT=14, padR=52;
+// barras verticais agrupadas — valor (R$) e quantidade lado a lado, escalas independentes
+// rótulos girados na vertical para caber com muitas categorias
+function svgBarsDualH(items, s1, s2){
+  const w=560, h=330, padL=52, padB=76, padT=52, padR=50;
   const plotW=w-padL-padR, plotH=h-padB-padT;
-  const maxB=Math.max(1,...items.map(i=>i[bar.key]||0));
-  const maxL=Math.max(1,...items.map(i=>i[line.key]||0));
-  const step=plotW/items.length, bw=Math.min(30,step-16);
-  const yB=v=> padT+plotH-(v/maxB*plotH);
-  const yL=v=> padT+plotH-(v/maxL*plotH);
+  const max1=Math.max(1,...items.map(i=>i[s1.key]||0));
+  const max2=Math.max(1,...items.map(i=>i[s2.key]||0));
+  const step=plotW/items.length, bw=Math.min(11,(step-6)/2);
   const ticks=4; let grid="";
   for(let t=0;t<=ticks;t++){ const y=padT+plotH-(plotH/ticks*t);
     grid+=`<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" class="grid-line"/>
-           <text x="${padL-8}" y="${y+3}" text-anchor="end" class="axis-txt">${kfmt(maxB/ticks*t)}</text>
-           <text x="${w-padR+8}" y="${y+3}" text-anchor="start" class="axis-txt" style="fill:${line.color}">${Math.round(maxL/ticks*t)}</text>`; }
-  const bars=items.map((it,i)=>{ const x=padL+i*step+step/2, hh=(it[bar.key]||0)/maxB*plotH;
-    return `<rect x="${x-bw/2}" y="${yB(it[bar.key]||0)}" width="${bw}" height="${Math.max(0,hh)}" rx="4" fill="${bar.color}" class="svg-bar"><title>${esc(it.label)} · ${bar.name}: ${fmtBRL(it[bar.key]||0)}</title></rect>`; }).join("");
-  const pts=items.map((it,i)=>`${padL+i*step+step/2},${yL(it[line.key]||0)}`).join(" ");
-  const lineEl=`<polyline points="${pts}" fill="none" stroke="${line.color}" stroke-width="2.5" stroke-linejoin="round"/>`+
-    items.map((it,i)=>`<circle cx="${padL+i*step+step/2}" cy="${yL(it[line.key]||0)}" r="3.6" fill="#fff" stroke="${line.color}" stroke-width="2"><title>${esc(it.label)} · ${line.name}: ${fmtInt(it[line.key]||0)} un</title></circle>`).join("");
-  const xlab=items.map((it,i)=>`<text x="${padL+i*step+step/2}" y="${h-padB+15}" text-anchor="end" transform="rotate(-35 ${padL+i*step+step/2} ${h-padB+15})" class="axis-txt">${esc(trim(it.label,12))}<title>${esc(it.label)}</title></text>`).join("");
-  return `<svg viewBox="0 0 ${w} ${h}" class="chart" role="img">${grid}${bars}${lineEl}${xlab}</svg>`;
+           <text x="${padL-8}" y="${y+3}" text-anchor="end" class="axis-txt" style="fill:${s1.color}">${kfmt(max1/ticks*t)}</text>
+           <text x="${w-padR+8}" y="${y+3}" text-anchor="start" class="axis-txt" style="fill:${s2.color}">${Math.round(max2/ticks*t)}</text>`; }
+  const bars=items.map((it,i)=>{
+    const cx=padL+i*step+step/2;
+    const v1=it[s1.key]||0, v2=it[s2.key]||0;
+    const h1=v1/max1*plotH, h2=v2/max2*plotH;
+    const y1=padT+plotH-h1, y2=padT+plotH-h2;
+    const x1=cx-bw-1, x2=cx+1;
+    const lx1=x1+bw/2, ly1=y1-6, lx2=x2+bw/2, ly2=y2-6;
+    return `<g class="svg-row">
+      <rect x="${x1}" y="${y1}" width="${bw}" height="${Math.max(0,h1)}" rx="3" fill="${s1.color}" class="svg-bar"><title>${esc(it.label)} · ${s1.name}: ${fmtBRL(v1)}</title></rect>
+      <text x="${lx1}" y="${ly1}" text-anchor="start" transform="rotate(-90 ${lx1} ${ly1})" style="fill:${s1.color};font-size:8.5px;font-weight:800">${esc(kfmt(v1))}</text>
+      <rect x="${x2}" y="${y2}" width="${bw}" height="${Math.max(0,h2)}" rx="3" fill="${s2.color}" class="svg-bar"><title>${esc(it.label)} · ${s2.name}: ${fmtInt(v2)} un</title></rect>
+      <text x="${lx2}" y="${ly2}" text-anchor="start" transform="rotate(-90 ${lx2} ${ly2})" style="fill:${s2.color};font-size:8.5px;font-weight:800">${esc(fmtInt(v2))}</text>
+      <text x="${cx}" y="${h-padB+14}" text-anchor="end" transform="rotate(-45 ${cx} ${h-padB+14})" class="axis-txt" style="font-size:10px">${esc(trim(it.label,14))}<title>${esc(it.label)}</title></text>
+    </g>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" class="chart" role="img">${grid}${bars}</svg>`;
 }
 
 /* ============================================================================
@@ -794,9 +955,242 @@ function render(){
   else if(tab==="pv") el.innerHTML=viewDim(rows,{keyFn:r=>r.setor, label:r=>r.setorNome, sub:r=>"PV "+r.setorCod, title:"Propagandistas", unit:"PV", clickFilter:"fSetor", showChart:true});
   else if(tab==="produto") el.innerHTML=viewDim(rows,{keyFn:r=>r.marca, label:r=>r.marca, title:"Produtos", unit:"produto", showChart:true});
   else if(tab==="rede") el.innerHTML=viewRede(rows);
-  else if(tab==="cidade") el.innerHTML=viewDim(rows,{keyFn:r=>r.cidadeKey, label:r=>r.municipio, sub:r=>r.uf, title:"Cidades", unit:"cidade", topN:20, showUF:true});
+  else if(tab==="cidade") el.innerHTML=viewCidade(rows);
   else if(tab==="bricks") el.innerHTML=viewDim(rows,{keyFn:r=>r.brick, label:r=>r.brickNome, sub:r=>"Brick "+r.brickCod, title:"Bricks", unit:"brick", topN:20});
+  else if(tab==="extensior") el.innerHTML=viewExtensior(rows);
   wireTableEvents();
+  STATE.mapInstance=null;                       // invalida mapa anterior
+  if(tab==="geral") renderMap(rows);            // mapa ao final da Visão Geral
+}
+
+/* ============================================================================
+   VISÃO EXTENSIOR — recorte do produto + tabela de faturamento por propagandista
+   ============================================================================ */
+function viewExtensior(rows){
+  const p=STATE.periods;
+  const extAll=rows.filter(r=>/EXTENSIOR/i.test(r.marca));
+  if(!extAll.length){
+    return `<div class="panel"><div class="empty-note">Nenhum registro de <b>Extensior</b> para os filtros selecionados.</div></div>`;
+  }
+  // cross-filter (estilo Power BI): clique na pizza (apresentação) ou nas barras (rede)
+  const xf=STATE.xf;
+  const ext=extAll.filter(r=>
+    (!xf.apres    || r.apresentacao===xf.apres) &&
+    (!xf.bandeira || r.bandeira===xf.bandeira));
+  if(!ext.length){
+    STATE.xf={apres:null,bandeira:null};
+    return `<div class="panel"><div class="empty-note">Nenhum registro para essa combinação de filtros. Filtros limpos — clique novamente.</div></div>`;
+  }
+
+  const t=totals(ext), tGeral=totals(rows);
+  const share = tGeral.atual>0 ? t.atual/tGeral.atual*100 : 0;
+
+  // barra de filtros ativos
+  const chips=[];
+  if(xf.apres)    chips.push(`<span class="xf-chip">Apresentação: <b>${esc(trim(xf.apres,34))}</b><button data-xfclear="apres" title="Remover">✕</button></span>`);
+  if(xf.bandeira) chips.push(`<span class="xf-chip">Rede: <b>${esc(xf.bandeira)}</b><button data-xfclear="bandeira" title="Remover">✕</button></span>`);
+  const xfBar = chips.length
+    ? `<section class="xf-bar">${chips.join("")}<button class="xf-clear-all" data-xfclear="all">Limpar filtros dos gráficos</button></section>`
+    : "";
+
+  const kpis=`<section class="grid kpis">
+    ${kpiCard("Faturamento "+p.atuLbl, fmtBRLc(t.atual),
+        `${deltaPill(t.evo)} vs ${p.antLbl} (${fmtBRLc(t.ant)})`, "")}
+    ${kpiCard("Unidades "+p.atuLbl, fmtInt(t.uAtu),
+        `${deltaPill(evo(t.uAtu,t.uAnt))} vs ${fmtInt(t.uAnt)} un`, "k-green")}
+    ${kpiCard("Positivação (PDVs)", fmtInt(t.pos),
+        `PDVs com Extensior no período`, "k-blue")}
+    ${kpiCard("Share no portfólio", share.toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})+"%",
+        `do faturamento total`, "k-amber")}
+  </section>`;
+
+  // tabela replicada, agora só com Extensior (respeita o cross-filter)
+  const table=buildPVTable(ext,"Faturamento por propagandista · Extensior","extensior",{drill:true, sortable:true});
+
+  // linhas por PV (valor e quantidade)
+  const cAtu=PALETTE[0], cAnt=PALETTE[7];
+  const pv=aggregate(ext,r=>r.setor,r=>r.setorNome).sort((a,b)=>b.atual-a.atual)
+            .map(g=>({label:g.label.split(" ")[0], atual:g.atual, ant:g.ant, uAtu:g.uAtu, uAnt:g.uAnt}));
+  const lineFat=`<div class="panel">
+    <div class="panel-head"><span class="panel-title">Extensior · faturamento por PV</span><span class="panel-sub">${p.atuLbl} × ${p.antLbl}</span></div>
+    ${svgLines(pv,[{key:"atual",name:p.atuLbl,color:cAtu},{key:"ant",name:p.antLbl,color:cAnt}], true)}
+    ${legend([{label:p.atuLbl,color:cAtu},{label:p.antLbl,color:cAnt}])}
+  </div>`;
+  const lineQtd=`<div class="panel">
+    <div class="panel-head"><span class="panel-title">Extensior · unidades por PV</span><span class="panel-sub">${p.atuLbl} × ${p.antLbl}</span></div>
+    ${svgLines(pv,[{key:"uAtu",name:p.atuLbl,color:cAtu},{key:"uAnt",name:p.antLbl,color:cAnt}], false)}
+    ${legend([{label:p.atuLbl,color:cAtu},{label:p.antLbl,color:cAnt}])}
+  </div>`;
+
+  // apresentações — pizza clicável (sempre sobre o universo Extensior, para permitir alternar)
+  const baseApr = extAll.filter(r=>!xf.bandeira || r.bandeira===xf.bandeira);
+  const aprAgg=aggregate(baseApr,r=>r.apresentacao).sort((a,b)=>b.atual-a.atual);
+  const aprData=aprAgg.map((g,i)=>({label:g.key, value:g.atual, pos:g.pos, color:PALETTE[i%PALETTE.length]}));
+  const totApr=aprData.reduce((s,d)=>s+d.value,0);
+  const chartApr=`<div class="panel">
+    <div class="panel-head"><span class="panel-title">Extensior · por apresentação</span><span class="panel-sub">clique para filtrar</span></div>
+    <div class="grid" style="grid-template-columns:auto 1fr; gap:18px; align-items:center">
+      ${svgDonut(aprData,"Apresentações", String(aprData.length), {dim:"apres"})}
+      ${splitLegend(aprData, totApr, {dim:"apres"})}
+    </div>
+  </div>`;
+
+  // top redes — barras clicáveis
+  const baseBand = extAll.filter(r=>!xf.apres || r.apresentacao===xf.apres);
+  const band=aggregate(baseBand,r=>r.bandeira).filter(g=>g.atual>0).sort((a,b)=>b.atual-a.atual).slice(0,10)
+              .map(g=>({label:g.key, value:g.atual, disp:fmtBRLc(g.atual), color:PALETTE[1]}));
+  const chartBand=`<div class="panel">
+    <div class="panel-head"><span class="panel-title">Extensior · top redes</span><span class="panel-sub">clique para filtrar</span></div>
+    ${svgBarsH(band,{padL:150, xf:{dim:"bandeira"}})}
+  </div>`;
+
+  return kpis
+    + xfBar
+    + `<section class="grid" style="margin-top:16px">${table}</section>`
+    + `<section class="grid cols-2" style="margin-top:16px">${lineFat}${lineQtd}</section>`
+    + `<section class="grid cols-2" style="margin-top:16px">${chartApr}${chartBand}</section>`;
+}
+
+/* ============================================================================
+   VISÃO CIDADE — drill: cidade → PDVs (coluna I) → marcas (coluna K)
+   ============================================================================ */
+function viewCidade(rows){
+  const p=STATE.periods;
+  const t=totals(rows);
+  const ctx="cidade";
+  if(!STATE.drill[ctx]) STATE.drill[ctx]={pv:null, pdv:null};
+  const dr=STATE.drill[ctx];
+  const F=projFactor();
+
+  const enrich=g=>{ g.evoR=g.evo; g.evoQ=evo(g.uAtu,g.uAnt); return g; };
+  const sortVal=(g,k)=>({label:g.label, ant:g.ant, atual:g.atual, uAnt:g.uAnt, uAtu:g.uAtu,
+    pos:g.pos, ticket:g.ticket, share:g.share||0,
+    evoR:(g.evoR.val===Infinity?1e18:g.evoR.val), evoQ:(g.evoQ.val===Infinity?1e18:g.evoQ.val)}[k]);
+  const applySort=(arr,st)=>{ arr.sort((a,b)=>{ const va=sortVal(a,st.sortKey), vb=sortVal(b,st.sortKey);
+    if(typeof va==="string") return va.localeCompare(vb,"pt-BR")*(st.sortDir<0?-1:1);
+    return (va-vb)*st.sortDir; }); return arr; };
+
+  const stC=tState("cidade-1");
+  let cid=aggregate(rows,r=>r.cidadeKey,r=>r.municipio).filter(g=>g.atual>0||g.ant>0).map(enrich);
+  const ufMap=new Map(); rows.forEach(r=>{ if(!ufMap.has(r.cidadeKey)) ufMap.set(r.cidadeKey,r.uf); });
+  cid.forEach(g=>{ g.share=t.atual>0?g.atual/t.atual*100:0; g.uf=ufMap.get(g.key)||""; });
+  applySort(cid, stC);
+  const maxC=Math.max(1,...cid.map(g=>g.atual));
+
+  const kpis=`<section class="grid kpis">
+    ${kpiCard("Cidades com venda", fmtInt(cid.filter(g=>g.atual>0).length), `em ${[...new Set(cid.map(g=>g.uf))].filter(Boolean).join(" · ")}`, "")}
+    ${kpiCard("Faturamento total", fmtBRLc(t.atual), `${deltaPill(t.evo)} vs ${p.antLbl}`, "k-green")}
+    ${kpiCard("Positivação (PDVs)", fmtInt(t.pos), "PDVs com venda", "k-blue")}
+    ${kpiCard("Ticket médio", fmtBRL(t.ticket), "por unidade", "k-amber")}
+  </section>`;
+
+  // --- nível 3: marcas (coluna K) de um PDV ---
+  function marcaRows(cidKey, pdvKey){
+    const sub=rows.filter(r=>r.cidadeKey===cidKey && r.pdv===pdvKey);
+    const mc=aggregate(sub,r=>r.marca).filter(g=>g.atual>0||g.ant>0).sort((a,b)=>b.atual-a.atual);
+    const mx=Math.max(1,...mc.map(g=>g.atual));
+    const body=mc.map(g=>`<tr>
+        <td class="namecell" style="font-weight:600">${esc(g.key||"—")}</td>
+        <td class="num" style="color:var(--muted)">${fmtBRL(g.ant)}</td>
+        <td class="num barcell"><div class="bar g" style="--w:${g.atual/mx*100}"></div><span>${fmtBRL(g.atual)}</span></td>
+        <td class="num"><span class="evo ${g.evo.cls}">${esc(g.evo.txt)}</span></td>
+        <td class="num" style="color:var(--muted)">${fmtInt(g.uAnt)}</td>
+        <td class="num">${fmtInt(g.uAtu)}</td>
+      </tr>`).join("");
+    return `<div class="drill drill-2">
+      <div class="drill-h"><span class="dot g"></span>Marcas vendidas · ${esc(pdvName(pdvKey))}</div>
+      <div class="tbl-scroll">
+        <table class="data sub">
+          <thead><tr><th>Marca</th>
+            <th class="num">R$ ${p.antLbl}</th><th class="num">R$ ${p.atuLbl}</th><th class="num">Cresc.</th>
+            <th class="num">Qtd ${p.antLbl}</th><th class="num">Qtd ${p.atuLbl}</th>
+          </tr></thead>
+          <tbody>${body||`<tr><td colspan="6" class="empty-note">Sem marcas com venda.</td></tr>`}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  // --- nível 2: PDVs (coluna I) de uma cidade — só com venda ---
+  function pdvRowsC(cidKey){
+    const sub=rows.filter(r=>r.cidadeKey===cidKey);
+    const stF=tState("cidade-2");
+    let fa=aggregate(sub,r=>r.pdv).filter(g=>g.key && (g.atual>0||g.ant>0)).map(enrich);
+    applySort(fa, stF);
+    const mx=Math.max(1,...fa.map(g=>g.atual));
+    const bandMap=new Map(); const endMap=new Map();
+    sub.forEach(r=>{
+      if(!bandMap.has(r.pdv)) bandMap.set(r.pdv, r.bandeira);
+      if(!endMap.has(r.pdv)){
+        const partes=[r.endereco, r.bairro].filter(Boolean);
+        endMap.set(r.pdv, partes.join(" · "));
+      }
+    });
+    const fcols=[{k:"label",t:"Farmácia (PDV)",num:false},{k:"ant",t:"R$ "+p.antLbl,num:true},
+      {k:"atual",t:"R$ "+p.atuLbl,num:true},{k:"evoR",t:"Cresc.",num:true},
+      {k:"uAnt",t:"Qtd "+p.antLbl,num:true},{k:"uAtu",t:"Qtd "+p.atuLbl,num:true}];
+    const fhead=`<th class="rank">#</th>`+fcols.map(c=>{ const on=stF.sortKey===c.k;
+      return `<th class="${c.num?"num":""} ${on?"sorted":""}" data-cid2sort="${c.k}">${esc(c.t)}<span class="arrow">${on?(stF.sortDir<0?"▼":"▲"):""}</span></th>`; }).join("");
+    const body=fa.map((g,i)=>{
+      const open = dr.pdv===g.key;
+      const cnpj=(String(g.key).match(/(\d{6,})\s*$/)||[])[1];
+      const end=endMap.get(g.key)||"";
+      const linha2=[bandMap.get(g.key)||"", end, cnpj?"CNPJ "+cnpj:""].filter(Boolean).join(" · ");
+      const row=`<tr class="drillable ${open?"open":""}" data-cidpdv="${esc(g.key)}">
+        <td class="rank">${i+1}</td>
+        <td class="namecell"><div><span class="caret">${open?"▾":"▸"}</span> ${esc(trim(pdvName(g.key),40))}</div><div class="sub">${esc(linha2)}</div></td>
+        <td class="num" style="color:var(--muted)">${fmtBRL(g.ant)}</td>
+        <td class="num barcell"><div class="bar" style="--w:${g.atual/mx*100}"></div><span>${fmtBRL(g.atual)}</span></td>
+        <td class="num"><span class="evo ${g.evo.cls}">${esc(g.evo.txt)}</span></td>
+        <td class="num" style="color:var(--muted)">${fmtInt(g.uAnt)}</td>
+        <td class="num">${fmtInt(g.uAtu)}</td>
+      </tr>`;
+      const det = open ? `<tr class="drill-row"><td colspan="7">${marcaRows(cidKey,g.key)}</td></tr>` : "";
+      return row+det;
+    }).join("");
+    return `<div class="drill drill-1">
+      <div class="drill-h"><span class="dot"></span>PDVs com venda · ${fmtInt(fa.length)} <span class="hint">clique num PDV para ver as marcas</span></div>
+      <div class="tbl-scroll">
+        <table class="data sub"><thead><tr>${fhead}</tr></thead>
+          <tbody>${body||`<tr><td colspan="7" class="empty-note">Sem PDVs com venda.</td></tr>`}</tbody></table>
+      </div>
+    </div>`;
+  }
+
+  const ccols=[{k:"label",t:"Cidade",num:false},{k:"ant",t:"R$ "+p.antLbl,num:true},
+    {k:"atual",t:"R$ "+p.atuLbl,num:true},{k:"evoR",t:"Cresc. R$",num:true},
+    {k:"uAtu",t:"Unid.",num:true},{k:"evoQ",t:"Cresc. Qtd",num:true},
+    {k:"pos",t:"PDVs",num:true},{k:"ticket",t:"Ticket méd.",num:true},{k:"share",t:"Share",num:true}];
+  const chead=`<th class="rank">#</th>`+ccols.map(c=>{ const on=stC.sortKey===c.k;
+    return `<th class="${c.num?"num":""} ${on?"sorted":""}" data-cid1sort="${c.k}">${esc(c.t)}<span class="arrow">${on?(stC.sortDir<0?"▼":"▲"):""}</span></th>`; }).join("");
+
+  const body=cid.map((g,i)=>{
+    const open = dr.pv===g.key;
+    const row=`<tr class="drillable ${open?"open":""}" data-cid="${esc(g.key)}">
+      <td class="rank">${i+1}</td>
+      <td class="namecell"><div><span class="caret">${open?"▾":"▸"}</span> ${esc(g.label)}</div><div class="sub">${esc(g.uf)}</div></td>
+      <td class="num" style="color:var(--muted)">${fmtBRL(g.ant)}</td>
+      <td class="num barcell"><div class="bar" style="--w:${g.atual/maxC*100}"></div><span>${fmtBRL(g.atual)}</span></td>
+      <td class="num"><span class="evo ${g.evoR.cls}">${esc(g.evoR.txt)}</span></td>
+      <td class="num">${fmtInt(g.uAtu)}</td>
+      <td class="num"><span class="evo ${g.evoQ.cls}">${esc(g.evoQ.txt)}</span></td>
+      <td class="num">${fmtInt(g.pos)}</td>
+      <td class="num">${fmtBRL(g.ticket)}</td>
+      <td class="num">${(g.share||0).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})}%</td>
+    </tr>`;
+    const det = open ? `<tr class="drill-row"><td colspan="10">${pdvRowsC(g.key)}</td></tr>` : "";
+    return row+det;
+  }).join("");
+
+  const table=`<div class="panel" style="margin-top:16px">
+    <div class="panel-head"><span class="panel-title">Cidades</span><span class="panel-sub">${fmtInt(cid.length)} cidades · clique para ver os PDVs</span></div>
+    <div class="tbl-scroll">
+      <table class="data"><thead><tr>${chead}</tr></thead>
+        <tbody>${body||`<tr><td colspan="10" class="empty-note">Sem cidades com venda.</td></tr>`}</tbody></table>
+    </div>
+  </div>`;
+
+  return kpis + table;
 }
 
 /* ---------- KPI card ---------- */
@@ -814,6 +1208,213 @@ function deltaPill(e){ const map={up:"up",down:"down",flat:"flat",new:"new"};
 /* ============================================================================
    VISÃO GERAL
    ============================================================================ */
+/* TABELA REUTILIZÁVEL: Faturamento por propagandista
+   opts.drill = true  → clique no PV abre farmácias (coluna I) e, nelas, apresentações (coluna L)
+   opts.sortable = true → cabeçalhos ordenáveis (asc/desc), inclusive nas farmácias */
+function buildPVTable(rows, titulo, ctx, opts){
+  ctx = ctx || "geral";
+  opts = opts || {};
+  const canDrill = !!opts.drill, canSort = !!opts.sortable;
+  if(!STATE.drill[ctx]) STATE.drill[ctx]={pv:null, pdv:null};
+  const dr=STATE.drill[ctx];
+  const t=totals(rows);
+  const p=STATE.periods;
+  const F=projFactor();
+  const incCls=v=> v>0?"up":(v<0?"down":"flat");
+  const incTxt=v=> (v>0?"+":v<0?"−":"")+fmtBRL(Math.abs(v));
+
+  // enriquece cada grupo com os campos calculados (para permitir ordenação por eles)
+  const enrich=g=>{ g.projR=g.atual*F; g.projQ=g.uAtu*F; g.incR=g.projR-g.ant;
+                    g.evoR=g.evo; g.evoQ=evo(g.uAtu,g.uAnt); return g; };
+  const sortVal=(g,k)=>{
+    switch(k){
+      case "label":  return g.label;
+      case "ant":    return g.ant;
+      case "atual":  return g.atual;
+      case "projR":  return g.projR;
+      case "incR":   return g.incR;
+      case "evoR":   return g.evoR.val===Infinity?1e18:g.evoR.val;
+      case "uAnt":   return g.uAnt;
+      case "uAtu":   return g.uAtu;
+      case "projQ":  return g.projQ;
+      case "evoQ":   return g.evoQ.val===Infinity?1e18:g.evoQ.val;
+      default:       return g.atual;
+    }
+  };
+  const applySort=(arr, st)=>{
+    arr.sort((a,b)=>{
+      const va=sortVal(a,st.sortKey), vb=sortVal(b,st.sortKey);
+      if(typeof va==="string") return va.localeCompare(vb,"pt-BR")*(st.sortDir<0?-1:1);
+      return (va-vb)*st.sortDir;
+    });
+    return arr;
+  };
+
+  const stPV = canSort ? tState(ctx+"-pv") : {sortKey:"atual", sortDir:-1};
+  const pvAgg=applySort(aggregate(rows,r=>r.setor,r=>r.setorNome).map(enrich), stPV);
+  const maxP=Math.max(1,...pvAgg.map(g=>g.atual));
+
+  const cols=[
+    {k:"label", t:"Propagandista", num:false},
+    {k:"ant",   t:"R$ "+p.antLbl,  num:true},
+    {k:"atual", t:"R$ "+p.atuLbl,  num:true},
+    {k:"projR", t:"Projeção R$",   num:true},
+    {k:"incR",  t:"Incremento R$", num:true},
+    {k:"evoR",  t:"Cresc. R$",     num:true},
+    {k:"uAnt",  t:"Qtd "+p.antLbl, num:true},
+    {k:"uAtu",  t:"Qtd "+p.atuLbl, num:true},
+    {k:"projQ", t:"Projeção Qtd",  num:true},
+    {k:"evoQ",  t:"Cresc. Qtd",    num:true}
+  ];
+  const head=`<th class="rank">#</th>`+cols.map(c=>{
+    if(!canSort) return `<th class="${c.num?"num":""}">${esc(c.t)}</th>`;
+    const on=stPV.sortKey===c.k;
+    return `<th class="${c.num?"num":""} ${on?"sorted":""}" data-pvsort="${c.k}" data-ctx="${esc(ctx)}">${esc(c.t)}<span class="arrow">${on?(stPV.sortDir<0?"▼":"▲"):""}</span></th>`;
+  }).join("");
+
+  // --- nível 3: apresentações (coluna L) de uma farmácia ---
+  function apresRows(pvKey, pdvKey){
+    const sub=rows.filter(r=>r.setor===pvKey && r.pdv===pdvKey);
+    const ap=aggregate(sub,r=>r.apresentacao).filter(g=>g.atual>0||g.ant>0).sort((a,b)=>b.atual-a.atual);
+    const mx=Math.max(1,...ap.map(g=>g.atual));
+    const body=ap.map(g=>`<tr>
+        <td class="namecell" style="font-weight:600">${esc(g.key||"—")}</td>
+        <td class="num" style="color:var(--muted)">${fmtBRL(g.ant)}</td>
+        <td class="num barcell"><div class="bar g" style="--w:${g.atual/mx*100}"></div><span>${fmtBRL(g.atual)}</span></td>
+        <td class="num"><span class="evo ${g.evo.cls}">${esc(g.evo.txt)}</span></td>
+        <td class="num" style="color:var(--muted)">${fmtInt(g.uAnt)}</td>
+        <td class="num">${fmtInt(g.uAtu)}</td>
+      </tr>`).join("");
+    return `<div class="drill drill-2">
+      <div class="drill-h"><span class="dot g"></span>Apresentações vendidas · ${esc(pdvName(pdvKey))}</div>
+      <div class="tbl-scroll">
+        <table class="data sub">
+          <thead><tr>
+            <th>Apresentação</th>
+            <th class="num">R$ ${p.antLbl}</th><th class="num">R$ ${p.atuLbl}</th><th class="num">Cresc.</th>
+            <th class="num">Qtd ${p.antLbl}</th><th class="num">Qtd ${p.atuLbl}</th>
+          </tr></thead>
+          <tbody>${body||`<tr><td colspan="6" class="empty-note">Sem apresentações com venda.</td></tr>`}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  // --- nível 2: farmácias (coluna I) de um PV — ocultando as sem venda ---
+  function pdvRows(pvKey){
+    const sub=rows.filter(r=>r.setor===pvKey);
+    const stF=tState(ctx+"-pdv");
+    let fa=aggregate(sub,r=>r.pdv).filter(g=>g.key && (g.atual>0 || g.ant>0)).map(enrich);
+    fa=applySort(fa, stF);
+    const mx=Math.max(1,...fa.map(g=>g.atual));
+    const bandMap=new Map(); const endMap=new Map();
+    sub.forEach(r=>{
+      if(!bandMap.has(r.pdv)) bandMap.set(r.pdv, r.bandeira+" · "+r.municipio);
+      if(!endMap.has(r.pdv)) endMap.set(r.pdv, [r.endereco, r.bairro].filter(Boolean).join(" · "));
+    });
+    const fcols=[
+      {k:"label", t:"Farmácia (PDV)", num:false},
+      {k:"ant",   t:"R$ "+p.antLbl,   num:true},
+      {k:"atual", t:"R$ "+p.atuLbl,   num:true},
+      {k:"evoR",  t:"Cresc.",         num:true},
+      {k:"uAnt",  t:"Qtd "+p.antLbl,  num:true},
+      {k:"uAtu",  t:"Qtd "+p.atuLbl,  num:true}
+    ];
+    const fhead=`<th class="rank">#</th>`+fcols.map(c=>{
+      const on=stF.sortKey===c.k;
+      return `<th class="${c.num?"num":""} ${on?"sorted":""}" data-pdvsort="${c.k}" data-ctx="${esc(ctx)}">${esc(c.t)}<span class="arrow">${on?(stF.sortDir<0?"▼":"▲"):""}</span></th>`;
+    }).join("");
+    const body=fa.map((g,i)=>{
+      const open = dr.pdv===g.key;
+      const cnpj=(String(g.key).match(/(\d{6,})\s*$/)||[])[1];
+      const linha2=[bandMap.get(g.key)||"", endMap.get(g.key)||"", cnpj?"CNPJ "+cnpj:""].filter(Boolean).join(" · ");
+      const row=`<tr class="drillable ${open?"open":""}" data-pdv="${esc(g.key)}" data-ctx="${esc(ctx)}">
+        <td class="rank">${i+1}</td>
+        <td class="namecell"><div><span class="caret">${open?"▾":"▸"}</span> ${esc(trim(pdvName(g.key),40))}</div><div class="sub">${esc(linha2)}</div></td>
+        <td class="num" style="color:var(--muted)">${fmtBRL(g.ant)}</td>
+        <td class="num barcell"><div class="bar" style="--w:${g.atual/mx*100}"></div><span>${fmtBRL(g.atual)}</span></td>
+        <td class="num"><span class="evo ${g.evo.cls}">${esc(g.evo.txt)}</span></td>
+        <td class="num" style="color:var(--muted)">${fmtInt(g.uAnt)}</td>
+        <td class="num">${fmtInt(g.uAtu)}</td>
+      </tr>`;
+      const det = open ? `<tr class="drill-row"><td colspan="7">${apresRows(pvKey,g.key)}</td></tr>` : "";
+      return row+det;
+    }).join("");
+    return `<div class="drill drill-1">
+      <div class="drill-h"><span class="dot"></span>Farmácias com venda · ${fmtInt(fa.length)} PDVs <span class="hint">clique numa farmácia para ver as apresentações</span></div>
+      <div class="tbl-scroll">
+        <table class="data sub">
+          <thead><tr>${fhead}</tr></thead>
+          <tbody>${body||`<tr><td colspan="7" class="empty-note">Sem farmácias com venda.</td></tr>`}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  // --- nível 1: propagandistas ---
+  const tbodyPV=pvAgg.map((g,i)=>{
+    const open = canDrill && dr.pv===g.key;
+    const nameCell = canDrill
+      ? `<div><span class="caret">${open?"▾":"▸"}</span> ${esc(g.label)}</div><div class="sub">PV ${esc(g.extra.setorCod)}</div>`
+      : `<div>${esc(g.label)}</div><div class="sub">PV ${esc(g.extra.setorCod)}</div>`;
+    const row=`<tr class="${canDrill?"drillable":""} ${open?"open":""}" ${canDrill?`data-pv="${esc(g.key)}" data-ctx="${esc(ctx)}"`:""}>
+      <td class="rank">${i+1}</td>
+      <td class="namecell">${nameCell}</td>
+      <td class="num" style="color:var(--muted)">${fmtBRL(g.ant)}</td>
+      <td class="num barcell"><div class="bar" style="--w:${g.atual/maxP*100}"></div><span>${fmtBRL(g.atual)}</span></td>
+      <td class="num" style="color:var(--navy);font-weight:800">${fmtBRL(g.projR)}</td>
+      <td class="num"><span class="evo ${incCls(g.incR)}">${esc(incTxt(g.incR))}</span></td>
+      <td class="num"><span class="evo ${g.evoR.cls}">${esc(g.evoR.txt)}</span></td>
+      <td class="num" style="color:var(--muted)">${fmtInt(g.uAnt)}</td>
+      <td class="num">${fmtInt(g.uAtu)}</td>
+      <td class="num" style="color:var(--navy);font-weight:800">${fmtInt(g.projQ)}</td>
+      <td class="num"><span class="evo ${g.evoQ.cls}">${esc(g.evoQ.txt)}</span></td>
+    </tr>`;
+    const det = open ? `<tr class="drill-row"><td colspan="11">${pdvRows(g.key)}</td></tr>` : "";
+    return row+det;
+  }).join("");
+
+  const tProjR=t.atual*F, tProjQ=t.uAtu*F, tIncR=tProjR-t.ant;
+  const note = canDrill
+    ? `Clique num propagandista para ver as farmácias com venda · Projeção = valor ÷ ${STATE.proj.dias} dia(s) × ${STATE.proj.total} dia(s) · Incremento R$ = Projeção R$ − faturamento de ${p.antLbl}`
+    : `Projeção = valor do período ÷ ${STATE.proj.dias} dia(s) decorrido(s) × ${STATE.proj.total} dia(s) do mês · Incremento R$ = Projeção R$ − faturamento de ${p.antLbl}`;
+
+  return `<div class="panel">
+    <div class="panel-head" style="align-items:center; flex-wrap:wrap">
+      <span class="panel-title">${esc(titulo||"Faturamento por propagandista")}</span>
+      <span class="proj-ctl">
+        Projeção:
+        <input type="number" id="projDias" min="1" max="31" value="${STATE.proj.dias}" aria-label="Dias decorridos">
+        <span>de</span>
+        <input type="number" id="projTotal" min="1" max="31" value="${STATE.proj.total}" aria-label="Dias do mês">
+        <span>dias</span>
+      </span>
+    </div>
+    <div class="tbl-scroll">
+      <table class="data">
+        <thead><tr>${head}</tr></thead>
+        <tbody>${tbodyPV||`<tr><td colspan="11" class="empty-note">Sem dados para os filtros selecionados.</td></tr>`}</tbody>
+        <tfoot><tr>
+          <td></td>
+          <td class="namecell">Total</td>
+          <td class="num" style="color:var(--muted)">${fmtBRL(t.ant)}</td>
+          <td class="num">${fmtBRL(t.atual)}</td>
+          <td class="num" style="color:var(--navy)">${fmtBRL(tProjR)}</td>
+          <td class="num"><span class="evo ${incCls(tIncR)}">${esc(incTxt(tIncR))}</span></td>
+          <td class="num"><span class="evo ${t.evo.cls}">${esc(t.evo.txt)}</span></td>
+          <td class="num" style="color:var(--muted)">${fmtInt(t.uAnt)}</td>
+          <td class="num">${fmtInt(t.uAtu)}</td>
+          <td class="num" style="color:var(--navy)">${fmtInt(tProjQ)}</td>
+          <td class="num"><span class="evo ${evo(t.uAtu,t.uAnt).cls}">${esc(evo(t.uAtu,t.uAnt).txt)}</span></td>
+        </tr></tfoot>
+      </table>
+    </div>
+    <div class="proj-note">${note}</div>
+  </div>`;
+}
+// remove o CNPJ do nome do PDV para leitura
+function pdvName(s){ return String(s||"").replace(/\s*-\s*\d{6,}\s*$/,"").trim() || String(s||""); }
+
 function viewGeral(rows){
   const t=totals(rows);
   const p=STATE.periods;
@@ -832,8 +1433,10 @@ function viewGeral(rows){
   const cAtu=PALETTE[0], cAnt=PALETTE[7]; // atual navy · anterior cinza-slate
 
   // por PV (para as linhas 1 e 2) — ordenado por faturamento atual
-  const pv=aggregate(rows,r=>r.setor,r=>r.setorNome).sort((a,b)=>b.atual-a.atual)
-            .map(g=>({label:g.label.split(" ")[0], atual:g.atual, ant:g.ant, uAtu:g.uAtu, uAnt:g.uAnt}));
+  const pvAgg=aggregate(rows,r=>r.setor,r=>r.setorNome).sort((a,b)=>b.atual-a.atual);
+  const pv=pvAgg.map(g=>({label:g.label.split(" ")[0], atual:g.atual, ant:g.ant, uAtu:g.uAtu, uAnt:g.uAnt}));
+
+  const tablePV=buildPVTable(rows,"Faturamento por propagandista","geral");  // fixa: sem expandir
 
   // 1) LINHA — Faturamento (R$) P vs N por PV
   const lineFat=`<div class="panel">
@@ -865,13 +1468,13 @@ function viewGeral(rows){
     ${svgBarsH(tipoItems,{padL:110})}
   </div>`;
 
-  // 5) COMBO — produtos mais vendidos: Valor (barras) + Quantidade (linha)
-  const prod=aggregate(rows,r=>r.marca).sort((a,b)=>b.atual-a.atual).slice(0,10)
+  // 5) BARRAS AGRUPADAS — produtos mais vendidos: valor (R$) e quantidade, escalas independentes
+  const prod=aggregate(rows,r=>r.marca).sort((a,b)=>b.atual-a.atual).slice(0,15)
               .map(g=>({label:g.key, atual:g.atual, uAtu:g.uAtu}));
   const chartProd=`<div class="panel">
-    <div class="panel-head"><span class="panel-title">Produtos mais vendidos · valor e quantidade</span><span class="panel-sub">Top 10 · ${p.atuLbl}</span></div>
-    ${svgCombo(prod,{key:"atual",name:"Valor",color:cAtu},{key:"uAtu",name:"Quantidade",color:PALETTE[1]})}
-    ${legend([{label:"Valor (R$) · barras",color:cAtu},{label:"Quantidade (un) · linha",color:PALETTE[1]}])}
+    <div class="panel-head"><span class="panel-title">Produtos mais vendidos · valor e quantidade</span><span class="panel-sub">Top 15 · ${p.atuLbl}</span></div>
+    ${svgBarsDualH(prod,{key:"atual",name:"Valor",color:cAtu},{key:"uAtu",name:"Quantidade",color:PALETTE[1]})}
+    ${legend([{label:"Valor (R$) · eixo esquerdo",color:cAtu},{label:"Quantidade (un) · eixo direito",color:PALETTE[1]}])}
   </div>`;
 
   // 4) BARRAS — vendas por Bandeira, R$ (top 10)
@@ -882,32 +1485,200 @@ function viewGeral(rows){
     ${svgBarsH(bandItems,{padL:150})}
   </div>`;
 
-  // Mix por canal (mantido — visão complementar)
+  // BARRAS — vendas por Canal (coluna C), R$
   const canal=aggregate(rows,r=>r.canal).sort((a,b)=>b.atual-a.atual);
-  const canalData=canal.map((g,i)=>({label:g.key.replace("Farmacias ","F. "), value:g.atual, color:PALETTE[i%PALETTE.length]}));
+  const canalItems=canal.map((g,i)=>({label:g.key.replace("Farmacias ","F. "), value:g.atual, disp:fmtBRLc(g.atual), color:PALETTE[i%PALETTE.length]}));
   const chartCanal=`<div class="panel">
-    <div class="panel-head"><span class="panel-title">Mix por canal</span><span class="panel-sub">${p.atuLbl}</span></div>
-    ${svgDonut(canalData,"Canais", canal.length)}
-    ${legendPct(canalData, t.atual)}
+    <div class="panel-head"><span class="panel-title">Vendas por canal · R$</span><span class="panel-sub">${p.atuLbl}</span></div>
+    ${svgBarsH(canalItems,{padL:150})}
+  </div>`;
+
+  // MAPA — geografia do setor: pin por cidade (colunas E + D)
+  const chartMapa=`<div class="panel">
+    <div class="panel-head" style="align-items:center; flex-wrap:wrap">
+      <span class="panel-title">Mapa do setor · faturamento por cidade</span>
+      <span class="panel-sub" id="mapStatus">preparando mapa…</span>
+    </div>
+    <div id="mapBox" class="mapbox"></div>
+    <div class="map-note">Um alfinete por cidade (Município · UF) · clique para ver faturamento, crescimento, unidades e PDVs · use o seletor no canto do mapa para trocar o mapa base</div>
   </div>`;
 
   return kpis
+    + `<section class="grid" style="margin-top:16px">${tablePV}</section>`
     + `<section class="grid cols-2" style="margin-top:16px">${lineFat}${lineQtd}</section>`
     + `<section class="grid cols-2" style="margin-top:16px">${chartUF}${chartTipo}</section>`
     + `<section class="grid" style="margin-top:16px">${chartProd}</section>`
-    + `<section class="grid cols-2" style="margin-top:16px">${chartBand}${chartCanal}</section>`;
+    + `<section class="grid cols-2" style="margin-top:16px">${chartBand}${chartCanal}</section>`
+    + `<section class="grid" style="margin-top:16px">${chartMapa}</section>`;
+}
+
+/* ============================================================================
+   MAPA (Leaflet + OpenStreetMap) — alfinete por cidade: Município (E) + UF (D)
+   100% gratuito, sem chave de API e sem custo.
+   Mapas base alternativos caso a rede corporativa bloqueie algum provedor.
+   Nome da cidade fica escrito ao lado do alfinete (visível mesmo sem tiles).
+   ============================================================================ */
+const GEO_CACHE_KEY="euf_geo_cache_v2";
+const BASEMAP_STORE="euf_basemap";
+
+// provedores gratuitos, sem chave
+const BASEMAPS={
+  "Ruas (CARTO)": {
+    url:"https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png",
+    attr:"© OpenStreetMap · © CARTO", sub:"abcd", max:19
+  },
+  "OpenStreetMap": {
+    url:"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attr:"© OpenStreetMap", sub:"abc", max:19
+  },
+  "Esri Ruas": {
+    url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    attr:"© Esri", sub:"", max:19
+  }
+};
+function basemapSaved(){ try{ return localStorage.getItem(BASEMAP_STORE)||"Ruas (CARTO)"; }catch(e){ return "Ruas (CARTO)"; } }
+function basemapSave(n){ try{ localStorage.setItem(BASEMAP_STORE,n); }catch(e){} }
+
+function geoCacheLoad(){ try{ return JSON.parse(localStorage.getItem(GEO_CACHE_KEY)||"{}"); }catch(e){ return {}; } }
+function geoCacheSave(c){ try{ localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(c)); }catch(e){} }
+
+// geocodificação gratuita (Nominatim/OpenStreetMap) — resultados ficam em cache
+async function geocode(cidade, uf){
+  const q=cidade+", "+uf+", Brasil";
+  const url="https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q="+encodeURIComponent(q);
+  const r=await fetch(url,{headers:{"Accept":"application/json"}});
+  if(!r.ok) throw new Error("geocode HTTP "+r.status);
+  const j=await r.json();
+  if(!j.length) return null;
+  return {lat:parseFloat(j[0].lat), lng:parseFloat(j[0].lon)};
+}
+
+// alfinete vermelho (cabeça esférica + haste metálica)
+function pinIcon(w){
+  const h=Math.round(w*(46/24));
+  return L.divIcon({
+    className:"euf-pin",
+    html:`<svg width="${w}" height="${h}" viewBox="0 0 24 46" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="ph" cx="36%" cy="28%" r="72%">
+                <stop offset="0%" stop-color="#ff7b7b"/><stop offset="42%" stop-color="#e8202a"/><stop offset="100%" stop-color="#a5111a"/>
+              </radialGradient>
+              <linearGradient id="pn" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#7d858e"/><stop offset="45%" stop-color="#dde2e7"/><stop offset="100%" stop-color="#6f767e"/>
+              </linearGradient>
+            </defs>
+            <path d="M11.1 17 H12.9 L12.25 45.2 12 46 11.75 45.2 Z" fill="url(#pn)"/>
+            <circle cx="12" cy="11" r="9.4" fill="url(#ph)"/>
+            <ellipse cx="15.1" cy="7.4" rx="2.5" ry="1.8" fill="#fff" opacity=".85" transform="rotate(-22 15.1 7.4)"/>
+          </svg>`,
+    iconSize:[w,h], iconAnchor:[w/2,h], popupAnchor:[0,-h+6]
+  });
+}
+
+function renderMap(rows){
+  const box=document.getElementById("mapBox");
+  const st=document.getElementById("mapStatus");
+  if(!box) return;
+  if(typeof L==="undefined"){
+    box.innerHTML=`<div class="map-fallback">O componente de mapa não pôde ser carregado.<br>Verifique a conexão do portal e recarregue a página.</div>`;
+    if(st) st.textContent="mapa indisponível";
+    return;
+  }
+
+  const p=STATE.periods;
+  const cid=aggregate(rows,r=>r.cidadeKey,r=>r.municipio)
+    .filter(g=>g.atual>0 && !/^n\/?i$/i.test(g.label));
+  const ufMap=new Map(); rows.forEach(r=>{ if(!ufMap.has(r.cidadeKey)) ufMap.set(r.cidadeKey,r.uf); });
+  cid.forEach(g=>g.uf=ufMap.get(g.key)||"");
+  cid.sort((a,b)=>b.atual-a.atual);
+  if(!cid.length){ box.innerHTML=`<div class="map-fallback">Sem cidades com venda para os filtros atuais.</div>`; return; }
+
+  const map=L.map(box,{scrollWheelZoom:false}).setView([-19.5,-40.6],7);
+  STATE.mapInstance=map;
+
+  // mapas base gratuitos + seletor (se um for bloqueado na rede, troque aqui)
+  const layers={}; const sel=basemapSaved();
+  Object.entries(BASEMAPS).forEach(([nome,cfg])=>{
+    const opts={attribution:cfg.attr, maxZoom:cfg.max};
+    if(cfg.sub) opts.subdomains=cfg.sub;
+    layers[nome]=L.tileLayer(cfg.url, opts);
+  });
+  (layers[sel]||layers["Ruas (CARTO)"]).addTo(map);
+  L.control.layers(layers,null,{position:"topright"}).addTo(map);
+  map.on("baselayerchange", e=>basemapSave(e.name));
+
+  const maxV=Math.max(...cid.map(g=>g.atual));
+  const cache=geoCacheLoad();
+  const bounds=[];
+  let found=0, done=0;
+
+  function addPin(c, lat, lng){
+    const s=c.atual/maxV;
+    const w=15+Math.round(Math.sqrt(s)*8);
+    const m=L.marker([lat,lng],{icon:pinIcon(w), riseOnHover:true}).addTo(map);
+    m.bindPopup(
+      `<div style="font-family:Inter,sans-serif;min-width:190px">
+        <div style="font-weight:800;font-size:13.5px;color:#0e1b2e">${esc(c.label)} · ${esc(c.uf)}</div>
+        <div style="margin-top:6px;font-size:12.5px;color:#3b4a61;line-height:1.7">
+          <b>${fmtBRL(c.atual)}</b> em ${esc(p.atuLbl)}<br>
+          ${esc(p.antLbl)}: ${fmtBRL(c.ant)} · <b style="color:${c.evo.cls==="down"?"#d64545":"#0f9d58"}">${esc(c.evo.txt)}</b><br>
+          ${fmtInt(c.uAtu)} unidades · ${fmtInt(c.pos)} PDVs
+        </div>
+      </div>`);
+    // nome da cidade aparece ao passar o mouse
+    m.bindTooltip(`${c.label} · ${fmtBRLc(c.atual)}`, {direction:"top", offset:[0,-Math.round(w*(46/24))+4]});
+    bounds.push([lat,lng]); found++;
+  }
+  const upd=(pend)=>{ if(st) st.textContent = pend
+      ? `${found} cidades no mapa · localizando ${done}/${pend}…`
+      : `${found} cidades no mapa`; };
+
+  // 1ª passada: cache (instantâneo)
+  const pend=[];
+  for(const c of cid){
+    const k=c.label+"|"+c.uf;
+    const hit=cache[k];
+    if(hit && hit.lat) addPin(c, hit.lat, (hit.lng!==undefined?hit.lng:hit.lon));
+    else if(hit===null){ /* já buscado, sem resultado */ }
+    else pend.push(c);
+  }
+  if(bounds.length) map.fitBounds(bounds,{padding:[34,34]});
+  upd(pend.length);
+
+  // 2ª passada: geocodifica as pendentes (política do Nominatim: ~1 req/s)
+  (async()=>{
+    for(const c of pend){
+      if(STATE.mapInstance!==map) return;      // usuário mudou de aba/filtro
+      const k=c.label+"|"+c.uf;
+      try{
+        const g=await geocode(c.label, c.uf);
+        cache[k]= g ? {lat:g.lat, lng:g.lng} : null;
+        if(g) addPin(c, g.lat, g.lng);
+      }catch(e){ /* rede: tenta na próxima carga */ }
+      done++; upd(pend.length);
+      if(done % 10 === 0){ geoCacheSave(cache); if(bounds.length) map.fitBounds(bounds,{padding:[34,34]}); }
+      await new Promise(r=>setTimeout(r,1100));
+    }
+    geoCacheSave(cache);
+    if(bounds.length) map.fitBounds(bounds,{padding:[34,34]});
+    upd(0);
+  })();
 }
 function legendPct(items, total){
   total=total||1;
   return `<div class="legend">`+items.slice(0,8).map(i=>
     `<div class="li"><span class="sw" style="background:${i.color}"></span>${esc(i.label)} <b style="color:var(--muted);margin-left:2px">${(i.value/total*100).toFixed(0)}%</b></div>`).join("")+`</div>`;
 }
-function splitLegend(items,total){
+function splitLegend(items,total,xf){
   total=total||1;
-  return `<div class="split-legend">`+items.map(i=>
-    `<div class="row"><span class="dot" style="background:${i.color}"></span>
-      <span class="txt"><b>${esc(i.label)}</b><small>${fmtBRL(i.value)} · ${fmtInt(i.pos)} PDVs</small></span>
-      <span class="pct">${(i.value/total*100).toFixed(1).replace(".",",")}%</span></div>`).join("")+`</div>`;
+  return `<div class="split-legend">`+items.map(i=>{
+    const act = xf && STATE.xf[xf.dim]===i.label;
+    const dim = xf && STATE.xf[xf.dim] && !act;
+    const attrs = xf ? ` class="row xf-seg ${act?"xf-on":""}" data-xf="${esc(xf.dim)}" data-xfval="${esc(i.label)}" style="cursor:pointer;${dim?"opacity:.45":""}"` : ` class="row"`;
+    return `<div${attrs}><span class="dot" style="background:${i.color}"></span>
+      <span class="txt"><b>${esc(trim(i.label,38))}</b><small>${fmtBRL(i.value)} · ${fmtInt(i.pos)} PDVs</small></span>
+      <span class="pct">${(i.value/total*100).toFixed(1).replace(".",",")}%</span></div>`;
+  }).join("")+`</div>`;
 }
 
 /* ============================================================================
@@ -1080,6 +1851,19 @@ function sortData(data, st){
 
 /* liga eventos das tabelas após render */
 function wireTableEvents(){
+  // controle de dias da projeção (Visão Geral)
+  const pd=document.getElementById("projDias"), pt=document.getElementById("projTotal");
+  if(pd&&pt){
+    const upd=debounce(()=>{
+      const d=Math.max(1,Math.min(31, Number(pd.value)||1));
+      const tt=Math.max(1,Math.min(31, Number(pt.value)||1));
+      STATE.proj.dias=d; STATE.proj.total=tt;
+      const focused = document.activeElement===pd ? "projDias" : (document.activeElement===pt ? "projTotal" : null);
+      render();
+      if(focused){ const el=document.getElementById(focused); if(el){ el.focus(); el.select(); } }
+    },350);
+    pd.oninput=upd; pt.oninput=upd;
+  }
   document.querySelectorAll("th[data-sort]").forEach(th=>{
     th.onclick=()=>{ const key=findTkey(th); const st=tState(key); const k=th.dataset.sort;
       if(st.sortKey===k) st.sortDir*=-1; else {st.sortKey=k; st.sortDir=(k==="label")?1:-1;}
@@ -1094,8 +1878,82 @@ function wireTableEvents(){
   document.querySelectorAll("button[data-toggle]").forEach(b=>{
     b.onclick=()=>{ const st=tState(b.dataset.toggle); st.showAll=!st.showAll; render(); };
   });
+  // ordenação da tabela de PV (Extensior) — alterna asc/desc
+  document.querySelectorAll("th[data-pvsort]").forEach(th=>{
+    th.onclick=()=>{ const st=tState(th.dataset.ctx+"-pv"); const k=th.dataset.pvsort;
+      if(st.sortKey===k) st.sortDir*=-1; else { st.sortKey=k; st.sortDir=(k==="label")?1:-1; }
+      render(); };
+  });
+  // ordenação da sub-tabela de farmácias — alterna asc/desc
+  document.querySelectorAll("th[data-pdvsort]").forEach(th=>{
+    th.onclick=()=>{ const st=tState(th.dataset.ctx+"-pdv"); const k=th.dataset.pdvsort;
+      if(st.sortKey===k) st.sortDir*=-1; else { st.sortKey=k; st.sortDir=(k==="label")?1:-1; }
+      render(); };
+  });
+  // cross-filter dos gráficos (estilo Power BI): clique aplica, clique de novo remove
+  document.querySelectorAll("[data-xf]").forEach(el=>{
+    el.onclick=e=>{
+      e.stopPropagation();
+      const dim=el.dataset.xf, val=el.dataset.xfval;
+      STATE.xf[dim] = (STATE.xf[dim]===val) ? null : val;
+      STATE.drill["extensior"]={pv:null, pdv:null}; // recomeça o drill ao mudar o filtro
+      render();
+    };
+  });
+  document.querySelectorAll("[data-xfclear]").forEach(b=>{
+    b.onclick=e=>{
+      e.stopPropagation();
+      const d=b.dataset.xfclear;
+      if(d==="all") STATE.xf={apres:null,bandeira:null}; else STATE.xf[d]=null;
+      render();
+    };
+  });
+  // aba Cidade: ordenação e drill (cidade → PDV → marca)
+  document.querySelectorAll("th[data-cid1sort]").forEach(th=>{
+    th.onclick=()=>{ const st=tState("cidade-1"); const k=th.dataset.cid1sort;
+      if(st.sortKey===k) st.sortDir*=-1; else { st.sortKey=k; st.sortDir=(k==="label")?1:-1; }
+      render(); };
+  });
+  document.querySelectorAll("th[data-cid2sort]").forEach(th=>{
+    th.onclick=()=>{ const st=tState("cidade-2"); const k=th.dataset.cid2sort;
+      if(st.sortKey===k) st.sortDir*=-1; else { st.sortKey=k; st.sortDir=(k==="label")?1:-1; }
+      render(); };
+  });
+  document.querySelectorAll("tr.drillable[data-cid]").forEach(tr=>{
+    tr.onclick=e=>{ e.stopPropagation();
+      const d=STATE.drill["cidade"] || (STATE.drill["cidade"]={pv:null,pdv:null});
+      const k=tr.dataset.cid;
+      if(d.pv===k){ d.pv=null; d.pdv=null; } else { d.pv=k; d.pdv=null; }
+      render(); };
+  });
+  document.querySelectorAll("tr.drillable[data-cidpdv]").forEach(tr=>{
+    tr.onclick=e=>{ e.stopPropagation();
+      const d=STATE.drill["cidade"] || (STATE.drill["cidade"]={pv:null,pdv:null});
+      const k=tr.dataset.cidpdv;
+      d.pdv = (d.pdv===k) ? null : k;
+      render(); };
+  });
   document.querySelectorAll("tr.clickable").forEach(tr=>{
     tr.onclick=()=>{ const sel=document.getElementById(tr.dataset.filter); if(sel){ sel.value=tr.dataset.val; sel.dispatchEvent(new Event("change")); } };
+  });
+  // drill-down: PV → farmácias (coluna I) → apresentações (coluna L)
+  document.querySelectorAll("tr.drillable[data-pv]").forEach(tr=>{
+    tr.onclick=e=>{
+      e.stopPropagation();
+      const ctx=tr.dataset.ctx, k=tr.dataset.pv;
+      const d=STATE.drill[ctx] || (STATE.drill[ctx]={pv:null,pdv:null});
+      if(d.pv===k){ d.pv=null; d.pdv=null; } else { d.pv=k; d.pdv=null; }
+      render();
+    };
+  });
+  document.querySelectorAll("tr.drillable[data-pdv]").forEach(tr=>{
+    tr.onclick=e=>{
+      e.stopPropagation();
+      const ctx=tr.dataset.ctx, k=tr.dataset.pdv;
+      const d=STATE.drill[ctx] || (STATE.drill[ctx]={pv:null,pdv:null});
+      d.pdv = (d.pdv===k) ? null : k;
+      render();
+    };
   });
 }
 function findTkey(th){ // recupera a chave da tabela a partir do search input mais próximo
@@ -1107,9 +1965,16 @@ function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(
 /* ============================================================================
    EVENTOS GLOBAIS
    ============================================================================ */
+function applyFilterVisibility(){
+  const hide = STATE.activeTab==="geral";
+  const fc=document.getElementById("fieldCanal"), ft=document.getElementById("fieldTipo");
+  if(fc) fc.classList.toggle("hidden", hide);
+  if(ft) ft.classList.toggle("hidden", hide);
+}
 function switchTab(tab){
   STATE.activeTab=tab;
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected", t.dataset.tab===tab?"true":"false"));
+  applyFilterVisibility();
   render();
   window.scrollTo({top:0, behavior:"smooth"});
 }
@@ -1137,18 +2002,17 @@ document.getElementById("btnRefresh").addEventListener("click",()=>{
   else loadFromURL();
 });
 
-/* upload manual + drag & drop */
+/* upload manual + drag & drop (dropzone é um <label> que já abre o seletor ao clicar) */
 const fileInput=document.getElementById("fileInput");
-document.getElementById("btnPick").addEventListener("click",()=>fileInput.click());
-document.getElementById("btnRetry").addEventListener("click",loadFromURL);
 fileInput.addEventListener("change",e=>{ if(e.target.files[0]) loadFromFile(e.target.files[0]); e.target.value=""; });
 const dz=document.getElementById("dropzone");
 ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault(); dz.classList.add("drag");}));
 ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault(); dz.classList.remove("drag");}));
-dz.addEventListener("drop",e=>{ const f=e.dataTransfer.files[0]; if(f) loadFromFile(f); });
-// drop em qualquer lugar da tela de erro
-document.getElementById("stateError").addEventListener("dragover",e=>e.preventDefault());
-document.getElementById("stateError").addEventListener("drop",e=>{ e.preventDefault(); const f=e.dataTransfer.files[0]; if(f&&/\.x(lsx|ls)$/i.test(f.name)) loadFromFile(f); });
+dz.addEventListener("drop",e=>{ e.preventDefault(); e.stopPropagation(); const f=e.dataTransfer.files[0]; if(f) loadFromFile(f); });
+// permite soltar o arquivo em qualquer lugar da tela de importação
+const impScr=document.getElementById("importScreen");
+impScr.addEventListener("dragover",e=>e.preventDefault());
+impScr.addEventListener("drop",e=>{ e.preventDefault(); const f=e.dataTransfer.files[0]; if(f&&/\.x(lsx|ls)$/i.test(f.name)) loadFromFile(f); });
 
 /* ============================================================================
    INICIALIZAÇÃO
